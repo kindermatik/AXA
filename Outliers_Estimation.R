@@ -25,7 +25,7 @@ drivers.sample<-function(wd1="~/kaggle/AXA/drivers/",wd2="~/kaggle/AXA"){
 }
 
 outlier.qda<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/drivers/"){
-  library(randomForest)
+  library(MASS)
   
   for (i in 1:length(sample.drivers)){
     for (j in 1:5){
@@ -47,10 +47,10 @@ outlier.qda<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/driv
         qtl.dist.y<-quantile(dist.y,seq(0,1,by=0.05)) 
         
         speed<-sqrt(dist.x^2+dist.y^2)
-        qtl.speed<-quantile(speed,seq(0,1,by=0.05))
+        qtl.speed<-c(mean(speed),sd(speed))
         
         accel<-diff(speed)
-        qtl.accel<-quantile(accel,seq(0,1,by=0.05))
+        qtl.accel<-quantile(accel,seq(0,1,by=0.25))
         
         Row<-c(assum.driver,qtl.dist.x,qtl.dist.y,qtl.speed,qtl.accel)
         if (k==1 & j==1){
@@ -61,7 +61,30 @@ outlier.qda<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/driv
       }
     }
     
-   data.y<-as.factor(data[,1])
-   data.x<-data.frame(data[,c(2:85)])
+   data.y<-data[,1]
+   data.x<-data[,c(2:50)]
+   
+   model.qda<-qda(grouping=data.y,x=data.x)
+   est.qda<-predict(model.qda,data.x[c(1:200),])
+   for (m in 1:200){
+     if (m==1){
+       driver_trip<-paste(sample[1,i],m,sep="_")
+     } else{
+       driver_trip<-c(driver_trip,paste(sample[1,i],m,sep="_"))
+     }
+   }
+   
+   partial.solution<-data.frame("driver_trip"=driver_trip,"prob"=est.qda$class)
+   
+   if (i==1){
+     solution<-partial.solution
+   } else{
+     solution<-rbind(solution,partial.solution)
+   }
+   
+   msg=paste("driver:",i,"out of",length(sample.drivers),sep=" ")
+   message(msg)
   }
+
+  solution
 }

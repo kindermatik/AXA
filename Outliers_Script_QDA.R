@@ -1,0 +1,5 @@
+source('~/kaggle/AXA/AXA/Outliers_Estimation.R')
+sample<-sample<-drivers.sample()
+test<-outlier.qda(sample=sample,sample.drivers=c(1:100))
+setwd("~/kaggle/AXA")
+write.csv(test,"test.csv",row.names=FALSE)
