@@ -24,7 +24,7 @@ drivers.sample<-function(wd1="~/kaggle/AXA/drivers/",wd2="~/kaggle/AXA"){
   sample.drivers
 }
 
-outlier.rf<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/drivers/"){
+outlier.qda<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/drivers/"){
   library(randomForest)
   
   for (i in 1:length(sample.drivers)){
@@ -56,11 +56,12 @@ outlier.rf<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/drive
         if (k==1 & j==1){
           data<-data.frame(t(Row))
         } else {
-          data<-rbind(data,t(Row))
+          data<-rbind(data,Row)
         }
       }
     }
     
-    
+   data.y<-as.factor(data[,1])
+   data.x<-data.frame(data[,c(2:85)])
   }
 }
