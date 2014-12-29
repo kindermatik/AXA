@@ -10,7 +10,7 @@ drivers.sample<-function(wd1="~/kaggle/AXA/drivers/",wd2="~/kaggle/AXA"){
   
   for (i in 1:length(lfiles)){
     set.seed(i)
-    rnd.sample<-sample(lfiles,4)
+    rnd.sample<-sample(lfiles,9)
     drivers.column<-c(lfiles[i],rnd.sample)
     
     if (i==1){
@@ -61,11 +61,13 @@ outlier.qda<-function(sample,sample.drivers=c(1:10),file.path="~/kaggle/AXA/driv
       }
     }
     
-   data.y<-data[,1]
-   data.x<-data[,c(2:50)]
+    colnames(data)<-c("prob",paste("qtl.dist.x",seq(0.15,1,by=0.15),sep=".")
+                      ,paste("qtl.dist.y",seq(0.15,1,by=0.15),sep=".")
+                      ,paste("qtl.speed",seq(0.15,1,by=0.15),sep=".")
+                      ,paste("qtl.accel",seq(0.15,1,by=0.15),sep="."))
    
-   model.qda<-qda(grouping=data.y,x=data.x)
-   est.qda<-predict(model.qda,data.x[c(1:200),])
+   model.qda<-qda(prob~.,data=data)
+   est.qda<-predict(model.qda,data[c(1:200),c(2:25)])
    for (m in 1:200){
      if (m==1){
        driver_trip<-paste(sample[1,i],m,sep="_")
