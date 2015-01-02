@@ -28,7 +28,7 @@ drivers.sample<-function(wd1="~/kaggle/AXA/drivers/",wd2="~/kaggle/AXA"){
 get.drivers.data<-function(file=sample,column=1){
 consolidated<-list()  
   for (i in 1:10){
-    driver.data<-upload.driver(driver=file[column,i])
+    driver.data<-upload.driver(driver=file[i,column])
     driver.speed<-speed(data.list=driver.data)
     driver.acceleration<-acceleration(data.list=driver.speed)
 
@@ -44,41 +44,47 @@ consolidated<-list()
     consolidated[[i]]<-data.frame(prob,time,distance
                                   ,mad.speed,mad.acceleration
                                   ,qtl.speed,qtl.acceleration)
+    
   }
   consolidated.data<-do.call("rbind",consolidated)
   consolidated.data
+  driver.id<-as.numeric(rep(x=as.character(file[1,column]),times=200))
+  output.data<-list("data"=consolidated.data,"id"=driver.id)
+  output.data
 }
 
-prep.results<-function(process.data=a){
+prep.results<-function(data.list=a){
   library(MASS)
   library(e1071)
   library(stats)
     
-    scaled.data<-scale(x=process.data[c(1:200),-prob],center=FALSE
-                       ,apply(process.data[c(1:200),-prob],2,sd))
+  process.data<-data.list[[1]]
+  
+    scaled.data<-scale(x=process.data[c(1:200),-1],center=FALSE
+                       ,apply(process.data[c(1:200),-1],2,sd))
     
     a.qda<-qda(prob~.,data=process.data)
     a.nb<-naiveBayes(prob~.,data=process.data)
     a.km<-kmeans(scaled.data,centers=2,nstart=10)
-    a.pca<-prcomp(process.data[c(1:200),-1],scale=TRUE,tol=0.1)
-    a.cm<-cmeans(scaled.data,centers=2,method="ufcl",iter.max = 100000)
     
     b.qda<-predict(a.qda,process.data[c(1:200),-1])
     b.nb<-predict(a.nb,process.data[c(1:200),-1],type="raw")
-    b.pca<-kmeans(a.pca$x[,c(1:length(a.pca$sdev))],centers=2,nstart=10)
     
     c.qda<-round(b.qda$posterior[,2],0)
     c.nb<-round(b.nb[,2],0)
     c.km<-as.numeric(a.km$cluster==median(a.km$cluster))
-    c.pca<-as.numeric(b.pca$cluster==median(b.pca$cluster))
-    c.cm<-as.numeric(a.cm$cluster==median(a.cm$cluster))
     
-    prel.result<-data.frame("qda"=c.qda,"nb"=c.nb,"km"=c.km,"pca"=c.pca,"cm"=c.cm)
+    prel.result<-data.frame("qda"=c.qda,"nb"=c.nb,"km"=c.km)
     
     sum.result<-apply(prel.result,1,sum)
     
-    sum.result<-as.numeric(sum.result>2)
+    sum.result<-as.numeric(sum.result>1)
     sum.result
+  
+  driver.id<-data.list[[2]]
+  driver.id<-paste(driver.id,c(1:200),sep="_")
+  output.data<-data.frame("driver_trip"=driver.id,"prob"=sum.result)
+  output.data
 }
 
 
