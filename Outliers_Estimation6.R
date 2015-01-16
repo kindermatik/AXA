@@ -93,7 +93,7 @@ prep.results<-function(data.list=a){
                              ,"svm"=as.numeric(b2.svm)-1
                              ,"rf"=as.numeric(b2.rf)-1
                              ,"glm"=round(b2.glm,0))
-    sum.result<-as.numeric(apply(prel.results,1,sum)>2)
+    sum.result<-as.numeric(apply(prel.result,1,sum)>2)
     
   
     driver.id<-data.list[[2]]
